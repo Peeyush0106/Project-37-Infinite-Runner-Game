@@ -1,3 +1,4 @@
+// Global variable declaration
 var ground, monkeyHand, reset,
     monkey, monkeyAutomatedCollider, gameState,
     monkeyAutomatedColliderMonkeyXAddNumber,
@@ -16,32 +17,95 @@ var forest2ImgCounter = 2;
 
 var buffer = 50;
 
-function draw() {
-    doDrawWork();
+// Preload images
+function preload() {
+    groundImage = loadImage("ground.png");
+    monkeyHandImage = loadImage("monkey_jump_hand.png");
+    resetImage = loadImage("reset.png");
+    monkeyImage = loadAnimation("Monkey_01.png", "Monkey_02.png", "Monkey_03.png", "Monkey_04.png", "Monkey_05.png", "Monkey_06.png", "Monkey_07.png", "Monkey_08.png", "Monkey_09.png", "Monkey_10.png");
+    singlePlayerButtonImage = loadImage("single_player.png");
+    automatedPlayerButtonImage = loadImage("automated_gaming_mode.png");
+    bananaImage = loadImage("banana.png");
+    stoneImage = loadImage("stone.png");
+    monkeyJumpingImage = loadImage("monkey-jumping_image.png");
+    forestImage = loadImage("jungle.jpg");
 }
 
-function doDrawWork() {
+// Initial setup for the game
+function setup() {
+    canvas = createCanvas(800, 600);
+
+    ground = createSprite(400, 0, 1600, 50);
+    ground.y = (600 - (ground.height / 2));
+    ground.visible = false;
+
+    timesCanStoneTouch = 2;
+
+    forest = createSprite(0, 300);
+    forest.addImage("forest", forestImage);
+    forestImage.width = 1000;
+    forest.width = 1000;
+    forest.height = 600;
+    forest.depth = -100;
+
+    forest2 = createSprite(1000, 300);
+    forest2.addImage("forest", forestImage);
+    forest2.width = 1000;
+    forest2.height = 600;
+    forest2.depth = -100;
+
+    monkeyHand = createSprite();
+    monkeyHand.addImage("monkey_hand", monkeyHandImage);
+    monkeyHand.scale = 0.1;
+    monkeyHand.rotation = 180;
+
+    reset = createSprite(200, 275);
+    reset.visible = false;
+
+    monkey = createSprite(100, 180);
+    monkey.addAnimation("monkey", monkeyImage);
+    monkey.scale = 0.14;
+    monkey.addImage("monkey-jumping", monkeyJumpingImage);
+
+    monkeyAutomatedCollider = createSprite(0, 0, 65, 800);
+    monkeyAutomatedCollider.visible = false;
+    monkeyAutomatedColliderMonkeyXAddNumber = 20;
+
+    score = 0;
+    time = 0;
+    PLAY = ["Solo", "Automated"];
+    END = 0;
+    gameState = "notStarted";
+
+    stones = createGroup();
+    bananas = createGroup();
+
+    singlePlayerButton = createSprite(310, 220);
+    singlePlayerButton.addImage("single_player", singlePlayerButtonImage);
+    singlePlayerButton.scale = 2;
+
+    automatedPlayingButton = createSprite(490, 220);
+    automatedPlayingButton.addImage("automated_gaming_mode", automatedPlayerButtonImage);
+    automatedPlayingButton.scale = 2;
+
+    forestImgCounter = 1;
+    forestImg2Counter = 2;
+    buffer = 50;
+}
+
+// Continuous processing for continuous gaming
+function draw() {
     fill("red");
     textStyle(BOLD);
     background("lightgreen");
-    logConsoles();
     monkeyHand.x = monkey.x + 10;
     monkeyHand.y = monkey.y - 5;
     monkey.collide(ground);
     camera.position.x += monkey.velocityX;
     camera.position.y = 300;
     ground.x = camera.position.x;
-    // ground2.x = camera.position.x + 400;
-    logCameraBla();
-    // if (camera.position.x % 772 === 0) {
-    //     forest.x = (camera.position.x + ((forest2.x + (forest2.width / 2)) - 10)) - 200;
-    // }
-    // if (camera.position.x % 1792 === 0) {
-    //     forest2.x = (camera.position.x + ((forest.x + (forest.width / 2)) - 10)) - 1200;
-    // }
-
     
-
+    // Forest continuous replacement for continuous forest display
     if (camera.position.x > forestImgCounter * forest.width - buffer) {
         forest.x = (forestImgCounter + 1) * forest.width;
         forestImgCounter += 2;
@@ -50,37 +114,15 @@ function doDrawWork() {
         forest2.x = (forest2ImgCounter + 1) * forest.width;
         forest2ImgCounter += 2;
     }
-
-    // forest.x = camera.position.x;
-
-    // if (camera.position.x % 635 === 589 && camera.position.x !== 0) {
-    //     var forest_other = createSprite(camera.x, 300);
-    //     forest_other.addImage("forest", forestImage);
-    //     forest_other.width = 800;
-    //     forest_other.height = 600;
-    //     forest_other.depth = -100;
-    //     console.log("camera.position.x % 635 = 0");
-    // }
-
-    // forest.width = camera.position.x;
-    // forestImage.width = forest.width;
-
+    
+    // Show objects
     drawSprites();
     controlGameWithGameStates();
-    text("Mouse X: " + mouseX, (camera.position.x - (canvas.width / 2)) + 400, 250);
-    text("Mouse Y: " + mouseY, (camera.position.x - (canvas.width / 2)) + 400, 350);
+    eraseUselessObjects();
 }
 
-function logCameraBla() {
-    if (camera.position.x % 772 === 0) {
-        console.log(true, 772);
-    }
-    if (camera.position.x % 1792 === 0) {
-        console.log(true, 1792);
-    }
-}
-
-function logConsoles() {
+// Erasing useless objects for better memory and avoiding memory leakage
+function eraseUselessObjects() {
     if (stones.length > 0) {
         stones.setScaleEach((monkey.scale / 3) * 3.2);
         if (stones.get(0).x < -30) {
@@ -93,14 +135,16 @@ function logConsoles() {
             bananas.destroyEach();
         }
     }
-
 }
 
+// Control the game with the states that affect the gaming
 function controlGameWithGameStates() {
+    // When the points are less then 0, end the game
     if (score < 0) {
         gameState = END;
     }
 
+    // When the game is not started
     if (gameState === "notStarted") {
         waitageTime += 1;
         ground.velocityX = 0;
@@ -132,14 +176,16 @@ function controlGameWithGameStates() {
             gameState = PLAY[1];
         }
     }
+
+    // When the game is not notStarted and is either of the playing modes or the end modes
     if (gameState != "notStarted") {
         textSize(23);
-        text("Survival Time: " + time, camera.position.x + 300, 50);
-        text("Score: " + score, camera.position.x + 300, 120);
-        text("Times you can touch the stones: " + timesCanStoneTouch, camera.position.x + 190, 85);
-        // text("MouseX: " + mouseX, 250, 170);
-        // text("MouseY:  " + mouseY, 250, 230);
+        text("Survival Time: " + time, (camera.position.x - (canvas.width / 2)) + 300, 50);
+        text("Score: " + score, (camera.position.x - (canvas.width / 2)) + 300, 120);
+        text("Times you can touch the stones: " + timesCanStoneTouch, (camera.position.x - (canvas.width / 2)) + 190, 85);
     }
+
+    // When the user wantes to play the game manually
     if (gameState === PLAY[0]) {
         time += Math.round((World.frameRate / 30));
         monkey.visible = true;
@@ -150,8 +196,6 @@ function controlGameWithGameStates() {
         setPropertiesOfObjects();
         spawnStones();
         spawnBananas();
-
-        // forest.setVelocity(-1 * ((1 + time / 70)), 0);
 
         if (keyDown("space") || keyDown("up")) {
             if (monkey.y > 480) {
@@ -191,35 +235,24 @@ function controlGameWithGameStates() {
             if (monkey.isTouching(bananas) || monkeyHand.isTouching(bananas)) {
                 bananas.destroyEach();
                 score += 2;
-                // switch (score) {
-                //     case 10: monkey.scale = 0.14;
-                //         break;
-                //     case 20: monkey.scale = 0.145;
-                //         break;
-                //     case 30: monkey.scale = 0.15;
-                //         break;
-                //     case 40: monkey.scale = 0.155;
-                //         break;
-                //     default: break;
-                // }
                 if (monkey.scale < 1.6 && score % 10 === 0) {
                     monkey.scale *= 1.05;
                 }
             }
         }
     }
+
+    // When the user wants to play the game by seeing how the computer plays
     if (gameState === PLAY[1]) {
+        time += Math.round((World.frameRate / 30));
         monkey.visible = true;
         monkeyHand.visible = true;
         singlePlayerButton.visible = false;
         automatedPlayingButton.visible = false;
-        // forest.setVelocity(-1 * ((3 + 2 * time / 50)), 0);
 
         setPropertiesOfObjects();
         spawnStones();
         spawnBananas();
-
-        // time += Math.round((World.frameRate / 30));
 
         if (monkey.y < 480) {
             monkey.changeAnimation("monkey", monkeyImage);
@@ -238,17 +271,6 @@ function controlGameWithGameStates() {
             if (monkey.isTouching(bananas) || monkeyHand.isTouching(bananas)) {
                 bananas.destroyEach();
                 score += 2;
-                // switch (score) {
-                //     case 10: monkey.scale = 0.14;
-                //         break;
-                //     case 20: monkey.scale = 0.145;
-                //         break;
-                //     case 30: monkey.scale = 0.15;
-                //         break;
-                //     case 40: monkey.scale = 0.155;
-                //         break;
-                //     default: break;
-                // }
                 if (monkey.scale < 1.6 && score % 10 === 0) {
                     monkey.scale *= 1.05;
                 }
@@ -265,7 +287,7 @@ function controlGameWithGameStates() {
             }
         }
 
-        if (monkey.y < 435/* || forest.velocityX === 0*/) {
+        if (monkey.y < 435) {
             monkey.changeAnimation("monkey-jumping", monkeyJumpingImage);
             monkeyHand.visible = true;
             monkeyHand.rotationSpeed = 16;
@@ -275,12 +297,13 @@ function controlGameWithGameStates() {
             monkeyHand.visible = false;
         }
     }
+
+    // When the game has ended and the player has lost
     if (gameState === END) {
         monkey.changeAnimation("monkey-jumping", monkeyJumpingImage);
         monkey.rotation = -120;
         monkey.x = 100;
         monkey.y = 500;
-        // monkey.y += 0.4;
         monkeyHand.x = monkey.x;
         monkeyHand.visible = true;
         monkeyHand.rotationSpeed = 0;
@@ -290,7 +313,7 @@ function controlGameWithGameStates() {
         stones.setVelocityXEach(-14);
         bananas.setVelocityXEach(-8);
         text("Game Over! Don't you want to play again?" +
-            "                                  :D", camera.position.x + 15, 195, camera.position.x + 385);
+            "                                  :D", (camera.position.x - (canvas.width / 2)) + 15, 195, camera.position.x + 385);
         reset.visible = true;
         reset.addImage("reset", resetImage);
 
@@ -303,6 +326,7 @@ function controlGameWithGameStates() {
     }
 }
 
+// Continuous properties of the game to be set for the game to run efficiently
 function setPropertiesOfObjects() {
     monkeyHand.setCollider("rectangle", 0, 0, 20, 25, monkeyHand.rotation);
     monkey.collide(ground);
@@ -323,11 +347,6 @@ function setPropertiesOfObjects() {
     monkey.velocityY += 0.8;
 
     var velocityX = -1 * (monkey.velocityX * 5) / 3;
-
-    // if (stones.length > 0) {
-    //     stones.get(0).velocityX = velocityX;
-    // }
-
     if (bananas.length > 0) {
         bananas.get(0).velocityX = velocityX;
     }
@@ -341,38 +360,25 @@ function setPropertiesOfObjects() {
     monkeyHand.scale = monkey.scale;
 }
 
+// Spawn the bananas according to the position of camera
 function spawnBananas() {
-    // if (World.frameCount % 110 === 0) {
     if (World.frameCount % 200 === 0) {
-        // if (camera.position.x % 175 === 0) {
-        // bananas.destroyEach();
-        // bananas.clear();
         var bananaY = random(220, 350);
         var banana = createSprite(camera.position.x + 850, bananaY);
         banana.addImage("banana", bananaImage);
-        console.log("Banana spawn");
         banana.scale = 0.05;
         bananas.add(banana);
         banana.velocityY += 0.5;
-        monkeyAutomatedColliderMonkeyXAddNumber = random(20, 20);
-        // if (bananaSpawnTime > 120) { bananaSpawnTime -= 10; }
     }
 }
+
+// Spawn the stones according to the position of camera
 function spawnStones() {
-    // if (World.frameCount % 180 === 0) {
     if (World.frameCount % 240 === 0) {
-        // if (camera.position.x % 350 === 0) {
-        // stones.destroyEach();
-        // stones.clear();
         var stone = createSprite((camera.position.x - (canvas.width / 2)) + 900, 400, 3, 3);
         stone.addImage("stone", stoneImage);
-        // stone.scale = 0.1;
         stone.setCollider("circle", 0, 0, 105);
-        console.log("Stone spawn", stone.x, stone.y);
-        //stone.rotationSpeed = -1 * monkey.velocityX * 5 / 2;
         stone.velocityY += 10;
         stones.add(stone);
-        monkeyAutomatedColliderMonkeyXAddNumber = random(20, 20);
-        // if (stoneSpawnTime > 170) { stoneSpawnTime -= 10; }
     }
 }
