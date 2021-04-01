@@ -14,22 +14,9 @@ function preload() {
 function setup() {
     canvas = createCanvas(800, 600);
 
-    ground = createSprite(400, 0);
-    // ground.addImage(groundImage);
-    // groundImage.width = 1600;
-    // groundImage.height = 150;
-    ground.width = 1600;
-    ground.height = 50;
+    ground = createSprite(400, 0, 1600, 50);
     ground.y = (600 - (ground.height / 2));
     ground.visible = false;
-
-    // ground2 = createSprite(1200, 0);
-    // ground2.addImage(groundImage);
-    // groundImage.width = 800;
-    // groundImage.height = 150;
-    // ground2.width = 800;
-    // ground2.height = 150;
-    // ground2.y = (600 - (ground.height / 2)) + 50;
 
     timesCanStoneTouch = 2;
 
@@ -38,13 +25,15 @@ function setup() {
 
     forest = createSprite(0, 300);
     forest.addImage("forest", forestImage);
-    forest.width = 800;
+    forestImage.width = 1000;
+    //forestImage.height = 600;
+    forest.width = 1000;
     forest.height = 600;
     forest.depth = -100;
 
-    forest2 = createSprite(800, 300);
+    forest2 = createSprite(1000, 300);
     forest2.addImage("forest", forestImage);
-    forest2.width = 800;
+    forest2.width = 1000;
     forest2.height = 600;
     forest2.depth = -100;
     // forestImage.height = 400;
@@ -64,7 +53,7 @@ function setup() {
     monkey.addImage("monkey-jumping", monkeyJumpingImage);
 
     monkeyAutomatedCollider = createSprite(0, 0, 65, 800);
-    // monkeyAutomatedCollider.visible = false;
+    monkeyAutomatedCollider.visible = false;
 
     score = 0;
     time = 0;

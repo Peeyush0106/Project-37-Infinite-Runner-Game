@@ -11,6 +11,11 @@ var groundImage, monkeyHandImage,
     bananaImage, stoneImage, monkeyJumpingImage,
     forestImage, canvas;
 
+var forestImgCounter = 1;
+var forest2ImgCounter = 2;
+
+var buffer = 50;
+
 function draw() {
     doDrawWork();
 }
@@ -28,11 +33,22 @@ function doDrawWork() {
     ground.x = camera.position.x;
     // ground2.x = camera.position.x + 400;
     logCameraBla();
-    if (camera.position.x % 772 === 0) {
-        forest.x = (camera.position.x + ((forest2.x + (forest2.width / 2)) - 10)) - 200;
+    // if (camera.position.x % 772 === 0) {
+    //     forest.x = (camera.position.x + ((forest2.x + (forest2.width / 2)) - 10)) - 200;
+    // }
+    // if (camera.position.x % 1792 === 0) {
+    //     forest2.x = (camera.position.x + ((forest.x + (forest.width / 2)) - 10)) - 1200;
+    // }
+
+    
+
+    if (camera.position.x > forestImgCounter * forest.width - buffer) {
+        forest.x = (forestImgCounter + 1) * forest.width;
+        forestImgCounter += 2;
     }
-    if (camera.position.x % 1792 === 0) {
-        forest2.x = (camera.position.x + ((forest.x + (forest.width / 2)) - 10)) - 1200;
+    if (camera.position.x > forest2ImgCounter * forest.width - buffer) {
+        forest2.x = (forest2ImgCounter + 1) * forest.width;
+        forest2ImgCounter += 2;
     }
 
     // forest.x = camera.position.x;
@@ -308,9 +324,9 @@ function setPropertiesOfObjects() {
 
     var velocityX = -1 * (monkey.velocityX * 5) / 3;
 
-    if (stones.length > 0) {
-        stones.get(0).velocityX = velocityX;
-    }
+    // if (stones.length > 0) {
+    //     stones.get(0).velocityX = velocityX;
+    // }
 
     if (bananas.length > 0) {
         bananas.get(0).velocityX = velocityX;
@@ -328,7 +344,7 @@ function setPropertiesOfObjects() {
 function spawnBananas() {
     // if (World.frameCount % 110 === 0) {
     if (World.frameCount % 200 === 0) {
-    // if (camera.position.x % 175 === 0) {
+        // if (camera.position.x % 175 === 0) {
         // bananas.destroyEach();
         // bananas.clear();
         var bananaY = random(220, 350);
@@ -338,25 +354,25 @@ function spawnBananas() {
         banana.scale = 0.05;
         bananas.add(banana);
         banana.velocityY += 0.5;
-        monkeyAutomatedColliderMonkeyXAddNumber = random(50, 80);
+        monkeyAutomatedColliderMonkeyXAddNumber = random(20, 20);
         // if (bananaSpawnTime > 120) { bananaSpawnTime -= 10; }
     }
 }
 function spawnStones() {
     // if (World.frameCount % 180 === 0) {
     if (World.frameCount % 240 === 0) {
-    // if (camera.position.x % 350 === 0) {
+        // if (camera.position.x % 350 === 0) {
         // stones.destroyEach();
         // stones.clear();
-        var stone = createSprite(camera.position.x + 900, 400, 3, 3);
+        var stone = createSprite((camera.position.x - (canvas.width / 2)) + 900, 400, 3, 3);
         stone.addImage("stone", stoneImage);
         // stone.scale = 0.1;
         stone.setCollider("circle", 0, 0, 105);
-        console.log("Stone spawn");
-        stone.rotationSpeed = -1 * monkey.velocityX * 5 / 2;
+        console.log("Stone spawn", stone.x, stone.y);
+        //stone.rotationSpeed = -1 * monkey.velocityX * 5 / 2;
         stone.velocityY += 10;
         stones.add(stone);
-        monkeyAutomatedColliderMonkeyXAddNumber = random(50, 80);
+        monkeyAutomatedColliderMonkeyXAddNumber = random(20, 20);
         // if (stoneSpawnTime > 170) { stoneSpawnTime -= 10; }
     }
 }
