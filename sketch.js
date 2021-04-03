@@ -9,7 +9,7 @@ var ground, monkeyHand, reset,
 var groundImage, monkeyHandImage,
     resetImage, monkeyImage, frameToSecondConvert,
     singlePlayerButtonImage, automatedPlayerButtonImage,
-    bananaImage, stoneImage, monkeyJumpingImage,
+    bananaImage, stoneImage, monkeyJumpingImage, speed,
     forestImage, canvas, myFrameCount, myFrameCountIncrementer;
 
 var forestImgCounter = 1;
@@ -66,7 +66,7 @@ function setup() {
 
     monkeyAutomatedCollider = createSprite(0, 0, 65, 800);
     monkeyAutomatedCollider.visible = false;
-    monkeyAutomatedColliderMonkeyXAddNumber = 20;
+    monkeyAutomatedColliderMonkeyXAddNumber = 60;
 
     score = 0;
     time = 0;
@@ -92,6 +92,7 @@ function setup() {
     frameToSecondConvert = 30;
     seconds = myFrameCount / frameToSecondConvert;
     myFrameCountIncrementer = 1;
+	speed = 0;
 
     reset = createSprite(200, 275);
     reset.addImage("reset-image", resetImage);
@@ -106,11 +107,13 @@ function draw() {
     monkeyHand.x = monkey.x + 10;
     monkeyHand.y = monkey.y - 5;
     monkey.collide(ground);
-    camera.position.x += monkey.velocityX;
+    //camera.position.x += monkey.velocityX/2;
     camera.position.y = 300;
     ground.x = camera.position.x;
     reset.x = (camera.position.x - (canvas.width / 2)) + 200;
     seconds = Math.round(myFrameCount / frameToSecondConvert);
+	monkey.x = camera.position.x - 300;
+	speed = seconds/2;
 
     // Forest continuous replacement for continuous forest display
     if (camera.position.x > forestImgCounter * forest.width - buffer) {
@@ -153,7 +156,7 @@ function controlGameWithGameStates() {
 
     // When the game is not started
     if (gameState === "notStarted") {
-        monkey.velocityX = 0;
+        speed = 0;
         myFrameCount = 0;
         textSize(20);
         text('Press these buttons to start playing, control the monkey with'
@@ -317,7 +320,7 @@ function controlGameWithGameStates() {
         monkeyHand.x = monkey.x;
         monkeyHand.visible = true;
         monkeyHand.rotationSpeed = 0;
-        monkey.velocityX = 0;
+        speed = 0;
         bananas.destroyEach();
         stones.destroyEach();
         stones.setVelocityXEach(-14);
@@ -348,19 +351,24 @@ function setPropertiesOfObjects() {
         + monkeyAutomatedColliderMonkeyXAddNumber;
     monkeyAutomatedCollider.y = monkey.y;
 
-    if (monkey.velocityX >= 0 && monkey.velocityX <= 23) {
-        monkey.velocityX = ((time / 100));
+    if (speed >= 0) {
+        camera.position.x += speed;
+		monkeyAutomatedColliderMonkeyXAddNumber += 0.0001;
     }
-
+	
+	if (speed > 12) {
+		speed = 12;
+	}
+	
     stones.collide(ground);
     bananas.collide(ground);
 
     monkey.velocityY += 0.8;
 
-    var velocityX = -1 * (monkey.velocityX * 5) / 3;
+    /*var velocityX = -1 * (monkey.velocityX * 5) / 3;
     if (bananas.length > 0) {
         bananas.get(0).velocityX = velocityX;
-    }
+    }*/
     if (timesCanStoneTouch <= 0) {
         gameState = END;
     }
@@ -385,7 +393,7 @@ function spawnBananas() {
 
 // Spawn the stones according to the position of camera
 function spawnStones() {
-    if (Wolrd.frameCount % 240 === 0) {
+    if (World.frameCount % 240 === 0) {
         var stone = createSprite((camera.position.x - (canvas.width / 2)) + 900, 400, 3, 3);
         stone.addImage("stone", stoneImage);
         stone.setCollider("circle", 0, 0, 105);
