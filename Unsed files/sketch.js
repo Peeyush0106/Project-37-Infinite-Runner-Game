@@ -1,37 +1,34 @@
-// Global variable declaration
 var ground, monkeyHand, reset,
     monkey, monkeyAutomatedCollider, gameState,
     monkeyAutomatedColliderMonkeyXAddNumber,
-    score, time, PLAY, END, stones, bananas,
+    waitageTime, score, time, PLAY, END, stones, bananas,
     singlePlayerButton, automatedPlayingButton,
-    forest, forest2, timesCanStoneTouch, seconds;
+    forest, forest2, timesCanStoneTouch;
 
 var groundImage, monkeyHandImage,
-    resetImage, monkeyImage, frameToSecondConvert,
+    resetImage, monkeyImage,
     singlePlayerButtonImage, automatedPlayerButtonImage,
     bananaImage, stoneImage, monkeyJumpingImage,
-    forestImage, canvas, myFrameCount, myFrameCountIncrementer;
+    forestImage, canvas;
 
 var forestImgCounter = 1;
 var forest2ImgCounter = 2;
 
 var buffer = 50;
 
-// Preload images
 function preload() {
-    groundImage = loadImage("images/ground.png");
-    monkeyHandImage = loadImage("images/monkey_jump_hand.png");
-    resetImage = loadImage("images/reset.png");
-    monkeyImage = loadAnimation("images/Monkey_01.png", "images/Monkey_02.png", "images/Monkey_03.png", "images/Monkey_04.png", "images/Monkey_05.png", "images/Monkey_06.png", "images/Monkey_07.png", "images/Monkey_08.png", "images/Monkey_09.png", "images/Monkey_10.png");
-    singlePlayerButtonImage = loadImage("images/single_player.png");
-    automatedPlayerButtonImage = loadImage("images/automated_gaming_mode.png");
-    bananaImage = loadImage("images/banana.png");
-    stoneImage = loadImage("images/stone.png");
-    monkeyJumpingImage = loadImage("images/monkey-jumping_image.png");
-    forestImage = loadImage("images/jungle.jpg");
+    groundImage = loadImage("ground.png");
+    monkeyHandImage = loadImage("monkey_jump_hand.png");
+    resetImage = loadImage("reset.png");
+    monkeyImage = loadAnimation("Monkey_01.png", "Monkey_02.png", "Monkey_03.png", "Monkey_04.png", "Monkey_05.png", "Monkey_06.png", "Monkey_07.png", "Monkey_08.png", "Monkey_09.png", "Monkey_10.png");
+    singlePlayerButtonImage = loadImage("single_player.png");
+    automatedPlayerButtonImage = loadImage("automated_gaming_mode.png");
+    bananaImage = loadImage("banana.png");
+    stoneImage = loadImage("stone.png");
+    monkeyJumpingImage = loadImage("monkey-jumping_image.png");
+    forestImage = loadImage("jungle.jpg");
 }
 
-// Initial setup for the game
 function setup() {
     canvas = createCanvas(800, 600);
 
@@ -58,6 +55,9 @@ function setup() {
     monkeyHand.addImage("monkey_hand", monkeyHandImage);
     monkeyHand.scale = 0.1;
     monkeyHand.rotation = 180;
+
+    reset = createSprite(200, 275);
+    reset.visible = false;
 
     monkey = createSprite(100, 180);
     monkey.addAnimation("monkey", monkeyImage);
@@ -88,31 +88,21 @@ function setup() {
     forestImgCounter = 1;
     forestImg2Counter = 2;
     buffer = 50;
-    myFrameCount = 0;
-    frameToSecondConvert = 30;
-    seconds = myFrameCount / frameToSecondConvert;
-    myFrameCountIncrementer = 1;
-
-    reset = createSprite(200, 275);
-    reset.addImage("reset-image", resetImage);
-    reset.visible = false;
 }
 
-// Continuous processing for continuous gaming
 function draw() {
     fill("red");
     textStyle(BOLD);
-    // background("lightgreen");
+    background("lightgreen");
+    logConsoles();
     monkeyHand.x = monkey.x + 10;
     monkeyHand.y = monkey.y - 5;
     monkey.collide(ground);
     camera.position.x += monkey.velocityX;
     camera.position.y = 300;
     ground.x = camera.position.x;
-    reset.x = (camera.position.x - (canvas.width / 2)) + 200;
-    seconds = Math.round(myFrameCount / frameToSecondConvert);
+    logCameraBla();
 
-    // Forest continuous replacement for continuous forest display
     if (camera.position.x > forestImgCounter * forest.width - buffer) {
         forest.x = (forestImgCounter + 1) * forest.width;
         forestImgCounter += 2;
@@ -123,13 +113,19 @@ function draw() {
     }
 
     drawSprites();
-    // Show objects
     controlGameWithGameStates();
-    eraseUselessObjects();
 }
 
-// Erasing useless objects for better memory and avoiding memory leakage
-function eraseUselessObjects() {
+function logCameraBla() {
+    if (camera.position.x % 772 === 0) {
+        console.log(true, 772);
+    }
+    if (camera.position.x % 1792 === 0) {
+        console.log(true, 1792);
+    }
+}
+
+function logConsoles() {
     if (stones.length > 0) {
         stones.setScaleEach((monkey.scale / 3) * 3.2);
         if (stones.get(0).x < -30) {
@@ -142,19 +138,17 @@ function eraseUselessObjects() {
             bananas.destroyEach();
         }
     }
+
 }
 
-// Control the game with the states that affect the gaming
 function controlGameWithGameStates() {
-    // When the points are less then 0, end the game
     if (score < 0) {
         gameState = END;
     }
 
-    // When the game is not started
     if (gameState === "notStarted") {
-        monkey.velocityX = 0;
-        myFrameCount = 0;
+        waitageTime += 1;
+        ground.velocityX = 0;
         textSize(20);
         text('Press these buttons to start playing, control the monkey with'
             + ' the arrow keys and spacebar if you are not in '
@@ -168,14 +162,13 @@ function controlGameWithGameStates() {
         text("Enter Automated ", 432.5, 205);
         text("Gaming mode", 432.5, 230);
         monkey.visible = false;
-        monkey.rotation = 0;
         timesCanStoneTouch = 2;
         monkeyHand.visible = false;
         singlePlayerButton.visible = true;
         automatedPlayingButton.visible = true;
+        reset.visible = false;
         score = 0;
         time = 0;
-        reset.visible = false;
         if (mousePressedOver(singlePlayerButton)) {
             gameState = PLAY[0];
         }
@@ -184,19 +177,14 @@ function controlGameWithGameStates() {
             gameState = PLAY[1];
         }
     }
-
-    // When the game is not notStarted and is either of the playing modes or the end modes
     if (gameState != "notStarted") {
         textSize(23);
         text("Survival Time: " + time, (camera.position.x - (canvas.width / 2)) + 300, 50);
         text("Score: " + score, (camera.position.x - (canvas.width / 2)) + 300, 120);
         text("Times you can touch the stones: " + timesCanStoneTouch, (camera.position.x - (canvas.width / 2)) + 190, 85);
     }
-
-    // When the user wantes to play the game manually
     if (gameState === PLAY[0]) {
-        myFrameCount += myFrameCountIncrementer;
-        time += seconds;
+        time += Math.round((World.frameRate / 30));
         monkey.visible = true;
         monkeyHand.visible = true;
         singlePlayerButton.visible = false;
@@ -220,7 +208,7 @@ function controlGameWithGameStates() {
                 stones.get(0).x = 30;
                 timesCanStoneTouch -= 1;
                 monkey.scale = 0.14;
-                score -= 10;
+                score -= 20;
             }
         }
 
@@ -250,11 +238,8 @@ function controlGameWithGameStates() {
             }
         }
     }
-
-    // When the user wants to play the game by seeing how the computer plays
     if (gameState === PLAY[1]) {
-        myFrameCount += myFrameCountIncrementer;
-        time += seconds;
+        time += Math.round((World.frameRate / 30));
         monkey.visible = true;
         monkeyHand.visible = true;
         singlePlayerButton.visible = false;
@@ -307,12 +292,10 @@ function controlGameWithGameStates() {
             monkeyHand.visible = false;
         }
     }
-
-    // When the game has ended and the player has lost
     if (gameState === END) {
         monkey.changeAnimation("monkey-jumping", monkeyJumpingImage);
         monkey.rotation = -120;
-        monkey.x = (camera.position.x - (canvas.width / 2)) + 100;
+        monkey.x = 100;
         monkey.y = 500;
         monkeyHand.x = monkey.x;
         monkeyHand.visible = true;
@@ -325,20 +308,17 @@ function controlGameWithGameStates() {
         text("Game Over! Don't you want to play again?" +
             "                                  :D", (camera.position.x - (canvas.width / 2)) + 15, 195, camera.position.x + 385);
         reset.visible = true;
+        reset.addImage("reset", resetImage);
+
         if (mousePressedOver(reset)) {
-            score = 0;
-            timesCanStoneTouch = 2;
-            camera.position.x = 400;
-            forest.x = 0;
-            forest2.x = 1000;
-            forestImgCounter = 1;
-            forest2ImgCounter = 2;
             gameState = "notStarted";
+            timesCanStoneTouch = 2;
+            score = 0;
+            monkey.rotation = 0;
         }
     }
 }
 
-// Continuous properties of the game to be set for the game to run efficiently
 function setPropertiesOfObjects() {
     monkeyHand.setCollider("rectangle", 0, 0, 20, 25, monkeyHand.rotation);
     monkey.collide(ground);
@@ -348,8 +328,9 @@ function setPropertiesOfObjects() {
         + monkeyAutomatedColliderMonkeyXAddNumber;
     monkeyAutomatedCollider.y = monkey.y;
 
-    if (monkey.velocityX >= 0 && monkey.velocityX <= 23) {
-        monkey.velocityX = ((time / 100));
+
+    if (monkey.velocityX <= 0 && monkey.velocityX > -23) {
+        monkey.velocityX = ((3 + 2 * time / 50));
     }
 
     stones.collide(ground);
@@ -371,25 +352,26 @@ function setPropertiesOfObjects() {
     monkeyHand.scale = monkey.scale;
 }
 
-// Spawn the bananas according to the position of camera
 function spawnBananas() {
     if (World.frameCount % 200 === 0) {
         var bananaY = random(220, 350);
         var banana = createSprite(camera.position.x + 850, bananaY);
         banana.addImage("banana", bananaImage);
+        console.log("Banana spawn");
         banana.scale = 0.05;
         bananas.add(banana);
         banana.velocityY += 0.5;
+        monkeyAutomatedColliderMonkeyXAddNumber = random(20, 20);
     }
 }
-
-// Spawn the stones according to the position of camera
 function spawnStones() {
-    if (Wolrd.frameCount % 240 === 0) {
+    if (World.frameCount % 240 === 0) {
         var stone = createSprite((camera.position.x - (canvas.width / 2)) + 900, 400, 3, 3);
         stone.addImage("stone", stoneImage);
         stone.setCollider("circle", 0, 0, 105);
+        console.log("Stone spawn", stone.x, stone.y);
         stone.velocityY += 10;
         stones.add(stone);
+        monkeyAutomatedColliderMonkeyXAddNumber = random(20, 20);
     }
 }
